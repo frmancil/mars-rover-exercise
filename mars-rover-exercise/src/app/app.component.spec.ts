@@ -25,18 +25,6 @@ describe('AppComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
-
-  it(`should have as title 'mars-rover-exercise'`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('mars-rover-exercise');
-  });
-
   it(`should function loadFile`, () => {
     spyOn(component, 'loadFile').and.callThrough();
     const file = new File(['5 5\n1 2 N\nLMLMLMLMM\n3 3 E\nMMRMMRMRRM'], 'instructions', { type: 'text/html' });
