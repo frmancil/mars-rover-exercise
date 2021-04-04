@@ -31,11 +31,13 @@ export class AppComponent implements OnInit {
     this.plateau = new Plateau();
   }
 
+  // Load the selected file from local drive
   public loadFile($event: any): void {
     this.readFile($event.target);
     this.startExecution = true;
   }
 
+  // Read the selected file and split the lines to obtain the rover's instructions
   public readFile(instructions: any): void {
     let instructionsString;
     this.fileInstructions = [];
@@ -52,6 +54,8 @@ export class AppComponent implements OnInit {
     }
   }
 
+
+  // Validate if the instructions in the file are correct in form and values
   public validateInstructionsFile(): boolean {
     if (this.fileInstructions.length === 1 && this.fileInstructions[0] === '') {
       this.messageService.add({
@@ -81,6 +85,7 @@ export class AppComponent implements OnInit {
     return true;
   }
 
+  // Validate if the plateau coordinates in the file exists and keeps the example pattern
   public validatePlateauCoordinates(): any {
     if (!this.isNullOrUndefined(this.fileInstructions[0]) && this.fileInstructions[0].length > 0) {
       return this.plateauCoordinatesPattern.test(this.fileInstructions[0]);
@@ -89,6 +94,7 @@ export class AppComponent implements OnInit {
     }
   }
 
+  // Validate if the rover instructions in the file exists and keeps the example pattern
   public validateRoverInstructions(): boolean {
     for (let i = 1; i < this.fileInstructions.length; i = i + 2) {
       if (!this.isNullOrUndefined(this.fileInstructions[i]) && this.fileInstructions[i].length > 0) {
@@ -105,6 +111,7 @@ export class AppComponent implements OnInit {
     return true;
   }
 
+  // Start the execution of the different methods to move the rovers, and print the result of the run
   public setRoverToStart(): void {
     this.resultLabel = '';
     this.cleanLastExecution();
@@ -116,12 +123,14 @@ export class AppComponent implements OnInit {
     }
   }
 
+  // Clean the last execution values
   public cleanLastExecution(): void {
     this.roversSent = [];
     this.roversInPlateau = [];
     this.roversMissed = [];
   }
 
+  // Generate the result of the execution of the rovers run
   public showLandingResult(): void {
     if (this.roversInPlateau.length > 0) {
       for (const roverLanded of this.roversInPlateau) {
@@ -131,6 +140,7 @@ export class AppComponent implements OnInit {
     }
   }
 
+  // Obtain the rover instructions to add into a new rover
   public getRoverInstruction(instructionLine: any): any {
     const instructionToAdd = [];
     for (let i = 0; i < instructionLine.length; i++) {
@@ -139,6 +149,7 @@ export class AppComponent implements OnInit {
     return instructionToAdd;
   }
 
+  // Obtain the rover location and create a new location object to set into a new rover
   public getRoverLocation(locationLine: any): Location {
     const locationToAdd = new Location();
     locationToAdd.x = Number(locationLine.split(' ')[0]);
@@ -147,6 +158,7 @@ export class AppComponent implements OnInit {
     return locationToAdd;
   }
 
+  // Create the rovers to send to the plateau, setting them their corresponding location and instruction
   public createRoverToSend(): void {
     for (let i = 1; i < this.fileInstructions.length; i = i + 2) {
       const rover = new Rover();
@@ -156,11 +168,13 @@ export class AppComponent implements OnInit {
     }
   }
 
+  // Obtain the current plateau limits
   public getPlateauLimit(): any {
     this.plateau.x = Number(this.fileInstructions[0].split(' ')[0]);
     this.plateau.y = Number(this.fileInstructions[0].split(' ')[1]);
   }
 
+  // Method to run every rover created according to their instructions
   public moveRoverInPlateau(): void {
     this.roversInPlateau = [];
     this.roversMissed = [];
@@ -189,6 +203,7 @@ export class AppComponent implements OnInit {
     }
   }
 
+  // Method to move a rover depending on their instructions
   public roverStart(currentRover: any, instruction: any): void {
     if (instruction.toUpperCase() === 'L') {
       currentRover.roverLocation.direction = this.turnLeft(currentRover);
@@ -199,6 +214,7 @@ export class AppComponent implements OnInit {
     }
   }
 
+  // Turn left movement depending on the rover actual direction
   public turnLeft(currentRover: any): any {
     switch (currentRover.roverLocation.direction.toUpperCase()) {
       case 'N': {
@@ -217,6 +233,7 @@ export class AppComponent implements OnInit {
     }
   }
 
+  // Turn right movement depending on the rover actual direction
   public turnRight(currentRover: any): any {
     switch (currentRover.roverLocation.direction.toUpperCase()) {
       case 'N': {
@@ -235,6 +252,7 @@ export class AppComponent implements OnInit {
     }
   }
 
+  // Forward movement depending on the rover actual direction
   public moveForward(currentRover: any): void {
     switch (currentRover.roverLocation.direction.toUpperCase()) {
       case 'N': {
@@ -257,6 +275,7 @@ export class AppComponent implements OnInit {
     }
   }
 
+  // Validate if the rover result outside of the bounds of the plateau because of their instructions
   public roverOutOfPlateauCheck(movedRover: any): boolean {
     if (movedRover.roverLocation.x < 0 || movedRover.roverLocation.y < 0) {
       return true;
@@ -268,6 +287,7 @@ export class AppComponent implements OnInit {
     return false;
   }
 
+  // Validate if the rover collide with another rover that is already present in the plateau
   public roverCollisionInPlateau(movedRover: any, roversInPlateau: any): boolean {
     if (roversInPlateau.length > 0) {
       for (const roverInPlateau of roversInPlateau) {
@@ -281,6 +301,7 @@ export class AppComponent implements OnInit {
     }
   }
 
+  // Utility to check if an object is null or undefined
   public isNullOrUndefined<T>(obj: T | null | undefined): obj is null | undefined {
     return typeof obj === 'undefined' || obj === null;
   }
