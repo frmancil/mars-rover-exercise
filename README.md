@@ -1,4 +1,5 @@
-Mars Rover exercise
+Mars Rover exercise.
+
 To execute the project, first install the following: Visual Studio Code https://code.visualstudio.com/, Node.js https://nodejs.org/en/, and Git https://git-scm.com/.
 
 After you install the applications, download the source code of the project doing 'git clone https://github.com/frmancil/mars-rover-exercise.git' (always without the quotes) in Command prompt. In case you needed, in the Command prompt execute the next command: 'npm install -g @angular/cli' to download angular.
