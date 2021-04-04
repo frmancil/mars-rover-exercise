@@ -1,0 +1,13 @@
+input[type="file"] {
+    display: none;
+}
+
+label.custom {
+    color: #ffffff;
+    background: #007ad9;
+    border: 1px solid #007ad9;
+    padding: 0.429rem 1rem;
+    font-size: 1rem;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+    border-radius: 3px;
+}

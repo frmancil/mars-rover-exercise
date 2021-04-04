@@ -8,7 +8,9 @@ import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
-
+import { PanelModule } from 'primeng/panel';
+import { ButtonModule } from 'primeng/button';
+import { DividerModule } from 'primeng/divider';
 
 @NgModule({
   declarations: [
@@ -20,7 +22,10 @@ import { ToastModule } from 'primeng/toast';
     AppRoutingModule,
     FormsModule,
     InputTextModule,
-    ToastModule
+    ToastModule,
+    PanelModule,
+    ButtonModule,
+    DividerModule
   ],
   providers: [],
   bootstrap: [AppComponent]

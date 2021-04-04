@@ -24,6 +24,7 @@ export class AppComponent implements OnInit {
   locationPattern = new RegExp('^[0-9_]+( [0-9_]+)+( [a-zA-Z_]+)$');
   moveSetPattern = new RegExp('^[A-Za-z]+$');
   resultLabel: any;
+  startExecution = false;
 
   ngOnInit(): void {
     this.roversSent = [];
@@ -32,6 +33,7 @@ export class AppComponent implements OnInit {
 
   public loadFile($event: any): void {
     this.readFile($event.target);
+    this.startExecution = true;
   }
 
   public readFile(instructions: any): void {
@@ -51,7 +53,7 @@ export class AppComponent implements OnInit {
   }
 
   public validateInstructionsFile(): boolean {
-    if (this.isNullOrUndefined(this.fileInstructions) || this.fileInstructions.length === 0) {
+    if (this.fileInstructions.length === 1 && this.fileInstructions[0] === '') {
       this.messageService.add({
         severity: 'error', summary: 'Error reading file',
         detail: 'File is empty.'
@@ -96,6 +98,8 @@ export class AppComponent implements OnInit {
   }
 
   public setRoverToStart(): void {
+    this.resultLabel = '';
+    this.cleanLastExecution();
     if (this.validateInstructionsFile()) {
       this.createRoverToSend();
       this.getPlateauLimit();
@@ -104,12 +108,17 @@ export class AppComponent implements OnInit {
     }
   }
 
+  public cleanLastExecution(): void {
+    this.roversSent = [];
+    this.roversInPlateau = [];
+    this.roversMissed = [];
+  }
+
   public showLandingResult(): void {
     if (this.roversInPlateau.length > 0) {
-      this.resultLabel = '';
       for (const roverLanded of this.roversInPlateau) {
-        this.resultLabel = this.resultLabel.concat(roverLanded.roverLocation.x + '' +
-          roverLanded.roverLocation.y + roverLanded.roverLocation.direction + '<br/>');
+        this.resultLabel = this.resultLabel.concat('<br><strong>' + roverLanded.roverLocation.x + '' +
+          roverLanded.roverLocation.y + roverLanded.roverLocation.direction + '</strong>');
       }
     }
   }
@@ -173,17 +182,17 @@ export class AppComponent implements OnInit {
   }
 
   public roverStart(currentRover: any, instruction: any): void {
-    if (instruction === 'L') {
+    if (instruction.toUpperCase() === 'L') {
       currentRover.roverLocation.direction = this.turnLeft(currentRover);
-    } else if (instruction === 'R') {
+    } else if (instruction.toUpperCase() === 'R') {
       currentRover.roverLocation.direction = this.turnRight(currentRover);
-    } else {
+    } else if (instruction.toUpperCase() === 'M') {
       this.moveForward(currentRover);
     }
   }
 
   public turnLeft(currentRover: any): any {
-    switch (currentRover.roverLocation.direction) {
+    switch (currentRover.roverLocation.direction.toUpperCase()) {
       case 'N': {
         return 'W';
       }
@@ -201,7 +210,7 @@ export class AppComponent implements OnInit {
   }
 
   public turnRight(currentRover: any): any {
-    switch (currentRover.roverLocation.direction) {
+    switch (currentRover.roverLocation.direction.toUpperCase()) {
       case 'N': {
         return 'E';
       }
@@ -219,7 +228,7 @@ export class AppComponent implements OnInit {
   }
 
   public moveForward(currentRover: any): void {
-    switch (currentRover.roverLocation.direction) {
+    switch (currentRover.roverLocation.direction.toUpperCase()) {
       case 'N': {
         currentRover.roverLocation.y++;
         break;

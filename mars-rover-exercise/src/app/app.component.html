@@ -1,7 +1,20 @@
+<p-panel header="Mars Rover Execution">
+  <div class="row" style="padding: 3%;">
+    <h3>Press to select a file to load</h3>
+    <label for="file-load" class="custom">
+      Load File
+    </label>
+    <input type="file" (change)="loadFile($event)" #input accept=".txt" id="file-load" />
+  </div>
+  <div class="row" style="padding: 3%;">
+    <h3>Once the file is loaded, you can execute the rover run</h3>
+    <p-button (click)="setRoverToStart()" [disabled]="!startExecution">Start rovers</p-button>
+  </div>
+  <div class="row" style="padding: 3%;">
+    <h3>Output Result</h3>
+    <div [innerHTML]="resultLabel" style="padding-left: 1%;"></div>
+  </div>
+</p-panel>
+
 <p-toast position="top-right"></p-toast>
-<div>
-  <button (click)="setRoverToStart()" class="btn btn-default">Start</button>
-  <input type="file" (change)="loadFile($event)" #input accept=".txt"/>
-  <span>{{this.resultLabel}}</span>
-</div>
 <router-outlet></router-outlet>
