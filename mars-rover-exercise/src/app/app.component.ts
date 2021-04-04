@@ -22,7 +22,7 @@ export class AppComponent implements OnInit {
   fileInstructions: any[];
   plateauCoordinatesPattern = new RegExp('^[0-9_]+( [0-9_]+)$');
   locationPattern = new RegExp('^[0-9_]+( [0-9_]+)+( [a-zA-Z_]+)$');
-  moveSetPattern = new RegExp('^[A-Za-z]+$');
+  moveSetPattern = new RegExp('^[LlRrMm]+$');
   resultLabel: any;
   startExecution = false;
 
@@ -82,16 +82,24 @@ export class AppComponent implements OnInit {
   }
 
   public validatePlateauCoordinates(): any {
-    return this.plateauCoordinatesPattern.test(this.fileInstructions[0]);
+    if (!this.isNullOrUndefined(this.fileInstructions[0]) && this.fileInstructions[0].length > 0) {
+      return this.plateauCoordinatesPattern.test(this.fileInstructions[0]);
+    } else {
+      return false;
+    }
   }
 
   public validateRoverInstructions(): boolean {
     for (let i = 1; i < this.fileInstructions.length; i = i + 2) {
-      if (!this.locationPattern.test(this.fileInstructions[i])) {
-        return false;
+      if (!this.isNullOrUndefined(this.fileInstructions[i]) && this.fileInstructions[i].length > 0) {
+        if (!this.locationPattern.test(this.fileInstructions[i])) {
+          return false;
+        }
       }
-      if (!this.moveSetPattern.test(this.fileInstructions[i + 1])) {
-        return false;
+      if (!this.isNullOrUndefined(this.fileInstructions[i + 1]) && this.fileInstructions[i + 1].length > 0) {
+        if (!this.moveSetPattern.test(this.fileInstructions[i + 1])) {
+          return false;
+        }
       }
     }
     return true;
