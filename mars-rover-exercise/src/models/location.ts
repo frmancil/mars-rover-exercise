@@ -1,5 +1,5 @@
 export class Location {
-    position_x: any;
-    position_y: any;
+    x: any;
+    y: any;
     direction: any;
 }

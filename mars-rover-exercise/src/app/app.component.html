@@ -1,6 +1,7 @@
-hello
-<input type="text" pInputText [(ngModel)]="plateauSize" placeholder="Insert plateau size" />
-<input type="text" pInputText [(ngModel)]="roverLocation" placeholder="Insert rover location" />
-<input type="text" pInputText [(ngModel)]="roverInstructions" placeholder="Insert rover instructions" />
-<button (click)="setRoverToStart()" class="btn btn-default">Start</button>
+<p-toast position="top-right"></p-toast>
+<div>
+  <button (click)="setRoverToStart()" class="btn btn-default">Start</button>
+  <input type="file" (change)="loadFile($event)" #input accept=".txt"/>
+  <span>{{this.resultLabel}}</span>
+</div>
 <router-outlet></router-outlet>

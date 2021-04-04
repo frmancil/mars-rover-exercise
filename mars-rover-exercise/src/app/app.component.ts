@@ -1,84 +1,178 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Rover } from '../models/rover';
 import { Location } from '../models/location';
 import { Plateau } from '../models/plateau';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css'],
+  providers: [MessageService]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'mars-rover-exercise';
 
-  roverInstructions: any;
-  roverLocation: any;
-  plateauSize: any;
+  constructor(private messageService: MessageService) { }
+
   roversSent: Rover[];
   roversInPlateau: Rover[];
+  roversMissed: Rover[];
   plateau: Plateau;
+  fileInstructions: any[];
+  plateauCoordinatesPattern = new RegExp('^[0-9_]+( [0-9_]+)$');
+  locationPattern = new RegExp('^[0-9_]+( [0-9_]+)+( [a-zA-Z_]+)$');
+  moveSetPattern = new RegExp('^[A-Za-z]+$');
+  resultLabel: any;
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.roversSent = [];
+    this.plateau = new Plateau();
   }
 
-  public getRoverInstruction(): any {
-    if (!this.isNullOrUndefined(this.roverInstructions)) {
-      let instructionToAdd = [];
-      for (let i = 0; i < this.roverInstructions.length; i++) {
-        instructionToAdd[i] = this.roverInstructions[i];
+  public loadFile($event: any): void {
+    this.readFile($event.target);
+  }
+
+  public readFile(instructions: any): void {
+    let instructionsString;
+    this.fileInstructions = [];
+    const instructionFile: File = instructions.files[0];
+    const instructionReader: FileReader = new FileReader();
+    if (!this.isNullOrUndefined(instructionFile)) {
+      instructionReader.readAsText(instructionFile);
+      instructionReader.onloadend = (e) => {
+        instructionsString = instructionReader.result;
+        for (const line of instructionsString.split(/[\r\n]+/)) {
+          this.fileInstructions.push(line);
+        }
+      };
+    }
+  }
+
+  public validateInstructionsFile(): boolean {
+    if (this.isNullOrUndefined(this.fileInstructions) || this.fileInstructions.length === 0) {
+      this.messageService.add({
+        severity: 'error', summary: 'Error reading file',
+        detail: 'File is empty.'
+      });
+      return false;
+    }
+    if (!this.validatePlateauCoordinates()) {
+      this.messageService.add({
+        severity: 'warn', summary: 'Plateau Coordinates',
+        detail: 'Coordinates are invalid.'
+      });
+      return false;
+    }
+    if (!this.validateRoverInstructions()) {
+      this.messageService.add({
+        severity: 'warn', summary: 'Rover Instructions',
+        detail: 'There is an invalid instruction setted to a rover.'
+      });
+      return false;
+    }
+    this.messageService.add({
+      severity: 'success', summary: 'Read File',
+      detail: 'File is valid.'
+    });
+    return true;
+  }
+
+  public validatePlateauCoordinates(): any {
+    return this.plateauCoordinatesPattern.test(this.fileInstructions[0]);
+  }
+
+  public validateRoverInstructions(): boolean {
+    for (let i = 1; i < this.fileInstructions.length; i = i + 2) {
+      if (!this.locationPattern.test(this.fileInstructions[i])) {
+        return false;
       }
-      return instructionToAdd;
+      if (!this.moveSetPattern.test(this.fileInstructions[i + 1])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public setRoverToStart(): void {
+    if (this.validateInstructionsFile()) {
+      this.createRoverToSend();
+      this.getPlateauLimit();
+      this.moveRoverInPlateau();
+      this.showLandingResult();
     }
   }
 
-  public getRoverLocation(): any {
-    if (!this.isNullOrUndefined(this.roverLocation)) {
-      let locationToAdd = new Location;
-      locationToAdd.position_x = parseInt(this.roverLocation.split(' ')[0]);
-      locationToAdd.position_y = parseInt(this.roverLocation.split(' ')[1]);
-      locationToAdd.direction = this.roverLocation.split(' ')[2];
-      return locationToAdd;
+  public showLandingResult(): void {
+    if (this.roversInPlateau.length > 0) {
+      this.resultLabel = '';
+      for (const roverLanded of this.roversInPlateau) {
+        this.resultLabel = this.resultLabel.concat(roverLanded.roverLocation.x + '' +
+          roverLanded.roverLocation.y + roverLanded.roverLocation.direction + '<br/>');
+      }
     }
   }
 
-  public createRoverToSend(roverLocation: any, roverInstructions: any) {
-    let rover = new Rover;
-    rover.roverLocation = roverLocation;
-    rover.roverInstruction = roverInstructions;
-    this.roversSent.push(rover);
-    console.log(this.roversSent[0].roverInstruction);
+  public getRoverInstruction(instructionLine: any): any {
+    const instructionToAdd = [];
+    for (let i = 0; i < instructionLine.length; i++) {
+      instructionToAdd[i] = instructionLine[i];
+    }
+    return instructionToAdd;
   }
 
-  public setRoverToStart() {
-    this.createRoverToSend(this.getRoverLocation(), this.getRoverInstruction());
-    this.moveRoverInPlateau();
+  public getRoverLocation(locationLine: any): Location {
+    const locationToAdd = new Location();
+    locationToAdd.x = Number(locationLine.split(' ')[0]);
+    locationToAdd.y = Number(locationLine.split(' ')[1]);
+    locationToAdd.direction = locationLine.split(' ')[2];
+    return locationToAdd;
+  }
+
+  public createRoverToSend(): void {
+    for (let i = 1; i < this.fileInstructions.length; i = i + 2) {
+      const rover = new Rover();
+      rover.roverLocation = this.getRoverLocation(this.fileInstructions[i]);
+      rover.roverInstruction = this.getRoverInstruction(this.fileInstructions[i + 1]);
+      this.roversSent.push(rover);
+    }
   }
 
   public getPlateauLimit(): any {
-    if (!this.isNullOrUndefined(this.roverLocation)) {
-      this.plateau.plateau_x = parseInt(this.plateauSize.split(' ')[0]);
-      this.plateau.plateau_y = parseInt(this.plateauSize.split(' ')[1]);
-    }
+    this.plateau.x = Number(this.fileInstructions[0].split(' ')[0]);
+    this.plateau.y = Number(this.fileInstructions[0].split(' ')[1]);
   }
 
-  public moveRoverInPlateau() {
+  public moveRoverInPlateau(): void {
     this.roversInPlateau = [];
+    this.roversMissed = [];
     for (const roverSent of this.roversSent) {
-      const currentRover = JSON.parse(JSON.stringify(roverSent))
+      const currentRover = JSON.parse(JSON.stringify(roverSent));
       currentRover.roverInstruction.forEach(instruction => {
         this.roverStart(currentRover, instruction);
-        this.roversInPlateau.push(currentRover);
-        console.log('final rover ' + currentRover.roverLocation.position_x + ', ' + currentRover.roverLocation.position_y + ', ' + currentRover.roverLocation.direction);
       });
+      if (this.roverOutOfPlateauCheck(currentRover)) {
+        this.messageService.add({
+          severity: 'warn', summary: 'Rover missed',
+          detail: 'Rover has landed outside the plateau.'
+        });
+        this.roversMissed.push(currentRover);
+      } else {
+        if (this.roverCollisionInPlateau(currentRover, this.roversInPlateau)) {
+          this.messageService.add({
+            severity: 'warn', summary: 'Rover collided',
+            detail: 'Rover has collided in their run.'
+          });
+          this.roversMissed.push(currentRover);
+        } else {
+          this.roversInPlateau.push(currentRover);
+        }
+      }
     }
   }
 
-  public isNullOrUndefined<T>(obj: T | null | undefined): obj is null | undefined {
-    return typeof obj === 'undefined' || obj === null;
-  }
-
-  public roverStart(currentRover: any, instruction: any) {
+  public roverStart(currentRover: any, instruction: any): void {
     if (instruction === 'L') {
       currentRover.roverLocation.direction = this.turnLeft(currentRover);
     } else if (instruction === 'R') {
@@ -88,7 +182,7 @@ export class AppComponent {
     }
   }
 
-  public turnLeft(currentRover: any) {
+  public turnLeft(currentRover: any): any {
     switch (currentRover.roverLocation.direction) {
       case 'N': {
         return 'W';
@@ -106,7 +200,7 @@ export class AppComponent {
     }
   }
 
-  public turnRight(currentRover: any) {
+  public turnRight(currentRover: any): any {
     switch (currentRover.roverLocation.direction) {
       case 'N': {
         return 'E';
@@ -124,25 +218,54 @@ export class AppComponent {
     }
   }
 
-  public moveForward(currentRover: any) {
+  public moveForward(currentRover: any): void {
     switch (currentRover.roverLocation.direction) {
       case 'N': {
-        currentRover.roverLocation.position_y++;
+        currentRover.roverLocation.y++;
         break;
       }
       case 'S': {
-        currentRover.roverLocation.position_y--;
+        currentRover.roverLocation.y--;
         break;
       }
       case 'E': {
-        currentRover.roverLocation.position_x++;
+        currentRover.roverLocation.x++;
         break;
       }
       case 'W': {
-        currentRover.roverLocation.position_x--;
+        currentRover.roverLocation.x--;
         break;
       }
       default: break;
     }
   }
+
+  public roverOutOfPlateauCheck(movedRover: any): boolean {
+    if (movedRover.roverLocation.x < 0 || movedRover.roverLocation.y < 0) {
+      return true;
+    }
+    if (movedRover.roverLocation.x > this.plateau.x ||
+      movedRover.roverLocation.y > this.plateau.y) {
+      return true;
+    }
+    return false;
+  }
+
+  public roverCollisionInPlateau(movedRover: any, roversInPlateau: any): boolean {
+    if (roversInPlateau.length > 0) {
+      for (const roverInPlateau of roversInPlateau) {
+        if ((movedRover.roverLocation.x === roverInPlateau.roverLocation.x) &&
+          (movedRover.roverLocation.y === roverInPlateau.roverLocation.y)) {
+          return true;
+        }
+      }
+    } else {
+      return false;
+    }
+  }
+
+  public isNullOrUndefined<T>(obj: T | null | undefined): obj is null | undefined {
+    return typeof obj === 'undefined' || obj === null;
+  }
+
 }
